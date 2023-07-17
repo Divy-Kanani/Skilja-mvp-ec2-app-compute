@@ -49,10 +49,8 @@ resource "aws_instance" "app_instance" {
 
   security_group_ids = [aws_security_group.example_security_group.id]
 
-  iam_instance_profile {
-    name = aws_iam_role.app_instance_role.name
-  }
-
+  iam_instance_profile = aws_iam_role.app_instance_role.name
+  
   tags = {
     Name = "app-instance"
   }
