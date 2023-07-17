@@ -1,6 +1,3 @@
-data "aws_ssm_parameter" "private_subnets" {
-  name = "/vpc/private_subnets"
-}
 
 
 resource "aws_iam_role" "app_instance_role" {
@@ -25,6 +22,7 @@ EOF
 resource "aws_security_group" "app_instance_security_group" {
   name        = "app-instance-security-group"
   description = "Skilja app instance security group"
+  vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
   ingress {
     from_port   = 80
@@ -42,16 +40,16 @@ resource "aws_security_group" "app_instance_security_group" {
 }
 
 resource "aws_instance" "app_instance" {
-  ami           = "ami-0c94855ba95c71c99" # Update with your desired AMI ID
-  instance_type = "t2.micro"              # Update with your desired instance type
+  ami           = var.ami_id
+  instance_type = var.instance_type
   key_name      = "skilja-app-instance-key"
   subnet_id     = split(",", data.aws_ssm_parameter.private_subnets.value)[0]
 
-  security_group_ids = [aws_security_group.example_security_group.id]
+  vpc_security_group_ids = [aws_security_group.app_instance_security_group.id]
+  iam_instance_profile   = aws_iam_role.app_instance_role.name
 
-  iam_instance_profile = aws_iam_role.app_instance_role.name
-  
   tags = {
     Name = "app-instance"
   }
 }
+
